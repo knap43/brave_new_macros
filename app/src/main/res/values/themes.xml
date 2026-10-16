@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.Macros" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <color name="background">#FF141210</color>
+    <color name="accent">#FFE1A34F</color>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A lightning bolt: the moment a trigger fires. Centred in the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#E1A34F"
+        android:pathData="M60.5,28 Q62.5,28 61.6,30 L55,48 L68,48 Q70.5,48 69.2,50.2 L49.5,79.4 Q48,81.3 48.4,79 L52,60 L40,60 Q37.6,60 38.8,57.8 L57.8,29.5 Q58.8,28 60.5,28 Z" />
+</vector>

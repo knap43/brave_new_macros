@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar glyph: the launcher bolt, redrawn on a 24dp grid. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M14.6,2 Q15.4,2 15.1,2.8 L12.5,10 L18,10 Q19,10 18.5,10.9 L10.2,22.3 Q9.6,23 9.8,22.1 L11.2,14 L6,14 Q5,14 5.5,13.1 L13.5,2.6 Q13.9,2 14.6,2 Z" />
+</vector>
