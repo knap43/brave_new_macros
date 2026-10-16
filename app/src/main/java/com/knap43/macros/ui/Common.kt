@@ -53,7 +53,7 @@ fun EmptyState(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** "today at 18:42", "yesterday at 08:10", or a short date and time. */
+/** "today at 18:42", "tomorrow at 07:00", "yesterday at 08:10", or a short date and time. */
 fun formatWhen(millis: Long): String {
     val zone = ZoneId.systemDefault()
     val time = Instant.ofEpochMilli(millis).atZone(zone)
@@ -61,6 +61,7 @@ fun formatWhen(millis: Long): String {
     val today = LocalDate.now(zone)
     return when (time.toLocalDate()) {
         today -> "today at $clock"
+        today.plusDays(1) -> "tomorrow at $clock"
         today.minusDays(1) -> "yesterday at $clock"
         else -> time.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
     }

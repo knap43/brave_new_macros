@@ -3,7 +3,8 @@
 Small trigger → action automations for Android. Kotlin, Jetpack Compose, Material 3 — same dark,
 amber-accented look as Journal, Files and Reader.
 
-First macro: **when WiFi connects to home, turn Bluetooth off.**
+Triggers: **WiFi connects** to a chosen network, or **a time of day** on chosen weekdays.
+Actions: **Bluetooth** on or off.
 
 ## Build
 
@@ -19,6 +20,8 @@ The GitHub workflow in `.github/workflows/build.yml` builds debug and release AP
 - **Watching WiFi.** A `PendingIntent` network request — no background service, no persistent
   notification. Android wakes `NetworkReceiver` when a WiFi network comes up; the watch is re-armed
   after reboot and app updates.
+- **Time.** One exact alarm per time macro, re-set after each run, after reboot, and when the clock
+  or time zone changes. `USE_EXACT_ALARM` makes it fire on the minute without a settings detour.
 - **Matching.** Reading the SSID needs precise location *and* “Allow all the time”, with location
   services on. The home screen lists whatever is still missing.
 - **Switching Bluetooth.** Since Android 13 ordinary apps can't. In order of preference:

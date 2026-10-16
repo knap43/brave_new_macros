@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import androidx.core.content.IntentCompat
+import com.knap43.macros.data.MacroStore
+import com.knap43.macros.data.Trigger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,11 +31,30 @@ class NetworkReceiver : BroadcastReceiver() {
     }
 }
 
-/** Network requests are forgotten on reboot and on update; re-arm them. */
+/** Woken by a time macro's alarm: runs it, then sets its next occurrence. */
+class AlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val id = intent.getStringExtra(Alarms.EXTRA_MACRO) ?: return
+        val app = context.applicationContext
+        val pending = goAsync()
+        receiverScope.launch {
+            try {
+                val macro = MacroStore.get(app).get(id)
+                if (macro != null && macro.enabled && macro.trigger is Trigger.Time) Engine.run(app, macro)
+            } finally {
+                Alarms.scheduleAll(app)
+                pending.finish()
+            }
+        }
+    }
+}
+
+/**
+ * Network requests and alarms are forgotten on reboot and on update, and alarms go stale when
+ * the clock, time zone or exact-alarm access changes; re-arm everything.
+ */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> Engine.sync(context.applicationContext)
-        }
+        Engine.sync(context.applicationContext)
     }
 }

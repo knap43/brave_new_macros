@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * Arms the system to wake the app when a trigger could fire, and runs the macros that match.
+ * Time triggers are set as alarms (see [Alarms]); WiFi is watched as below.
  *
  * WiFi is watched with a PendingIntent network request rather than a running service: Android
  * keeps it while the app sleeps and delivers it to [NetworkReceiver], so there's no persistent
@@ -34,6 +35,7 @@ object Engine {
      * macro while at home doesn't fire it there and then: it waits for the next real connection.
      */
     fun sync(context: Context, seedCurrent: Boolean = false) {
+        Alarms.scheduleAll(context)
         val cm = context.getSystemService(ConnectivityManager::class.java) ?: return
         val intent = pendingIntent(context)
         val watchWifi = MacroStore.get(context).macros.value.any { it.enabled && it.trigger is Trigger.WifiConnected }

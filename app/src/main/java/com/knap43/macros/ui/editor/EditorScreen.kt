@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Radar
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -72,6 +73,7 @@ import com.knap43.macros.data.ActionKind
 import com.knap43.macros.data.Macro
 import com.knap43.macros.data.MacroStore
 import com.knap43.macros.data.Trigger
+import com.knap43.macros.data.TriggerKind
 import com.knap43.macros.engine.Engine
 import com.knap43.macros.engine.Wifi
 import com.knap43.macros.ui.SectionHeader
@@ -102,16 +104,37 @@ fun EditorScreen(
         )
     }
     var name by remember(original) { mutableStateOf(original.name) }
-    val ssids = remember(original) { (original.trigger as Trigger.WifiConnected).ssids.toMutableStateList() }
+    var kind by remember(original) { mutableStateOf(TriggerKind.of(original.trigger)) }
+    val ssids = remember(original) {
+        (original.trigger as? Trigger.WifiConnected)?.ssids.orEmpty().toMutableStateList()
+    }
+    var time by remember(original) { mutableStateOf(original.trigger as? Trigger.Time ?: Trigger.Time()) }
     val actions = remember(original) { original.actions.toMutableStateList() }
 
-    fun draft() = original.copy(
-        name = name.trim(),
-        trigger = Trigger.WifiConnected(ssids.toList()),
-        actions = actions.toList(),
-    )
+    fun trigger(): Trigger = when (kind) {
+        TriggerKind.WIFI -> Trigger.WifiConnected(ssids.toList())
+        TriggerKind.TIME -> time
+    }
+    fun draft() = original.copy(name = name.trim(), trigger = trigger(), actions = actions.toList())
     val dirty = draft() != original.copy(name = original.name.trim()) || macroId == null
-    val valid = name.isNotBlank() && ssids.isNotEmpty() && actions.isNotEmpty()
+    val triggerValid = when (kind) {
+        TriggerKind.WIFI -> ssids.isNotEmpty()
+        TriggerKind.TIME -> time.days.isNotEmpty()
+    }
+    val valid = name.isNotBlank() && triggerValid && actions.isNotEmpty()
+
+    /** On a fresh draft still wearing the old kind's defaults, switch those defaults too. */
+    fun switchKind(to: TriggerKind) {
+        if (to == kind) return
+        if (macroId == null) {
+            if (name.trim() == kind.defaultName) name = to.defaultName
+            if (actions.toList() == kind.defaultActions) {
+                actions.clear()
+                actions.addAll(to.defaultActions)
+            }
+        }
+        kind = to
+    }
 
     var confirmDiscard by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -208,7 +231,24 @@ fun EditorScreen(
             )
 
             SectionHeader("When")
-            Column(Modifier.panel().padding(16.dp)) {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                TriggerKind.entries.forEachIndexed { i, option ->
+                    SegmentedButton(
+                        selected = kind == option,
+                        onClick = { switchKind(option) },
+                        shape = SegmentedButtonDefaults.itemShape(i, TriggerKind.entries.size),
+                        icon = { SegmentedButtonDefaults.Icon(active = kind == option) {
+                            Icon(
+                                if (option == TriggerKind.WIFI) Icons.Outlined.Wifi else Icons.Outlined.Schedule,
+                                null,
+                                Modifier.size(SegmentedButtonDefaults.IconSize),
+                            )
+                        } },
+                    ) { Text(option.label) }
+                }
+            }
+            if (kind == TriggerKind.TIME) TimeTrigger(time, onChange = { time = it })
+            if (kind == TriggerKind.WIFI) Column(Modifier.panel().padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Wifi, null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.width(12.dp))
